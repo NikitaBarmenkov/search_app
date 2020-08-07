@@ -49,6 +49,7 @@
     <script>;
         Vue.use(VueMaterial.default);
         var ws = null;
+        var HOST = location.origin.replace('https', 'wss');
         var app = new Vue({
             el: '#app',
             data: {
@@ -79,7 +80,7 @@
                 },
             },
             created: function() {
-                ws = io();
+                ws = io(HOST , {transports: ['websocket']});
             },
         });
 
