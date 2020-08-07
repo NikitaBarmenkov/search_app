@@ -1,0 +1,20 @@
+{
+  "name": "SocNetApp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.19.2",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "rockets": "^1.2.4",
+    "socket.io": "^2.3.0",
+    "utf8": "^3.0.0",
+    "vkflow": "^1.0.1",
+    "ws": "^7.3.1"
+  }
+}

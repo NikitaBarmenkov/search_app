@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta content="width=device-width,initial-scale=1,minimal-ui" name="viewport">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic|Material+Icons">
+        <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/vue-material.min.css">
+        <link rel="stylesheet" href="https://unpkg.com/vue-material/dist/theme/default.css">
+        <title>Поиск упоминаний</title>
+    </head>
+    <body>
+        <div id="app">
+            <div>
+                <md-dialog-alert
+                :md-active.sync="show_dialog"
+                md-title="У нас так не принято"
+                md-content="Поиск без ключевого слова невозможен" />
+            </div>
+            <h1 style="padding: 10px;">Поиск в соцсети по ключевому слову</h1>
+            <div style="width: 50%; padding: 10px;">
+                <md-field>
+                    <md-input type="text" v-model="keyword" placeholder="Введите ключевое слово"></md-input>
+                </md-field>
+                <md-chips v-model="excluded_words" md-placeholder="добавить минус-слово...">
+                    <div class="md-helper-text">Enter для добавления</div>
+                </md-chips>
+                <md-radio v-model="radio" value="vk">VK</md-radio>
+                <md-radio v-model="radio" value="reddit">Reddit</md-radio>
+                <md-button class="md-raised md-primary" type="button" v-on:click="find()">Найти и подписаться</md-button>
+            </div>
+            <div style="padding: 10px;">
+                <md-list  v-for="item in items" v-show="showList">
+                    <md-list-item>
+                        <div>
+                            <label>{{item.text}}</label>
+                            <md-divider></md-divider>
+                            <a v-bind:href="item.ref">{{item.ref}}</a>
+                        </div>
+                    </md-list-item>
+                </md-list>
+            </div>
+            <md-progress-bar md-mode="indeterminate" v-show="showProgress"></md-progress-bar>
+        </div>
+    </body>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://unpkg.com/vue-material"></script>
+    <script>;
+        Vue.use(VueMaterial.default);
+        var ws = null;
+        var app = new Vue({
+            el: '#app',
+            data: {
+                keyword: '',
+                excluded_words: [],
+                radio: 'vk',
+                items: [],
+                show_dialog: false,
+                showList: false,
+                showProgress: false
+            },
+            methods: {
+                find: async function() {
+                    this.showList = false;
+                    this.showProgress = true;
+                    if (this.keyword) {
+                        this.show_dialog = false;
+                        var send_data = {
+                            radio: this.radio,
+                            keyword: this.keyword,
+                            excluded_words: this.excluded_words
+                        }
+                        ws.emit('message', JSON.stringify(send_data));
+                    }
+                    else {
+                        this.show_dialog = true;
+                    }
+                },
+            },
+            created: function() {
+                ws = io();
+            },
+        });
+
+        ws.on('message', (response) => {
+            try {
+                const data = JSON.parse(response);
+                app.showList = true;
+                app.showProgress = false;
+                if (data.option == 'realtime') {
+                    app.items.unshift(data.data);
+                }
+                else {
+                    app.items = data.data;
+                }
+            }
+            catch(error) {
+                console.log(error);
+            }
+        });
+    </script>
+</html>
